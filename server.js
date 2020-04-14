@@ -19,7 +19,7 @@ class GetMap {
 class GetWeather {
   constructor(summary, time){
     this.forecast = summary;
-    this.time = String(new Date(time*1000)).slice(0,10);
+    this.time = new Date(time).toString().slice(0,15);
   }
 }
 
@@ -28,28 +28,45 @@ const cors = require('cors');
 // plug our library into express
 app.use(cors()); // configures our cross origing resource sharing.
 
+var error = {
+  status: 500,
+  responseText: "Sorry, something went wrong",
+};
 
-
+var weatherChecker;
 app.get('/location', (request, response) => {
+  weatherChecker = false;
   let cityName = request.query.city;
   let data = require('./data/geo.json');
-  let location = new GetMap(cityName,data[0]);
-  // console.log(request);
-  // console.log(location);
+  let location = error;
+  for (let i in data){
+    if (data[i].display_name.toLowerCase().includes(cityName)){
+      location = new GetMap(cityName,data[i]);
+      weatherChecker = true;
+      break;
+    }
+  }
   response.status(200).send(location);
-
 });
 
 app.get('/weather', (request, response) => {
-  let weatherArr = [];
-  let weatherData = require('./data/darksky.json').daily.data;
-  for (let data in weatherData){
-    let summary = weatherData[data].summary;
-    let time = weatherData[data].time;
-    weatherArr.push(new GetWeather(summary, time));
+  if (weatherChecker === true){
+    let weatherArr = [];
+    let weatherData = require('./data/weather.json').data;
+    for (let i in weatherData){
+      let summary = weatherData[i].weather.description;
+      let time = weatherData[i].datetime;
+      weatherArr.push(new GetWeather(summary, time));
+    }
+    response.status(200).send(weatherArr);
+  } else {
+    response.send(error);
   }
-  response.status(200).send(weatherArr);
 });
+app.use(errorHandler);
+function errorHandler(request, response) {
+  response.status(500).send('Sorry, something went wrong');
+}
 
 app.listen(PORT,() => console.log(`Listening on port ${PORT}`));
 
