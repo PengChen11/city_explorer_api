@@ -16,6 +16,12 @@ class GetMap {
   }
 }
 
+class GetWeather {
+  constructor(summary, time){
+    this.forecast = summary;
+    this.time = String(new Date(time*1000)).slice(0,10);
+  }
+}
 
 // bring in our library;
 const cors = require('cors');
@@ -34,6 +40,16 @@ app.get('/location', (request, response) => {
 
 });
 
+app.get('/weather', (request, response) => {
+  let weatherArr = [];
+  let weatherData = require('./data/darksky.json').daily.data;
+  for (let data in weatherData){
+    let summary = weatherData[data].summary;
+    let time = weatherData[data].time;
+    weatherArr.push(new GetWeather(summary, time));
+  }
+  response.status(200).send(weatherArr);
+});
 
 app.listen(PORT,() => console.log(`Listening on port ${PORT}`));
 
