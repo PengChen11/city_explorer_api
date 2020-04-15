@@ -1,4 +1,12 @@
 # Project city_explorer_api
+the deployed backend server url is:
+https://city-explorer-chen.herokuapp.com
+
+
+the front end designed by Code fellows is :
+https://codefellows.github.io/code-301-guide/curriculum/city-explorer-app/front-end/
+
+
 
 **Author**: Peng Chen
 **Version**: 1.1.0 
