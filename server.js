@@ -139,6 +139,32 @@ function getTrails(request,response){
     })
 
 }
+
+function getMovies(request,response){
+  const moviesKey = process.env.MOVIE_API_KEY;
+  const moviesUrl = `https://api.themoviedb.org/3/movie/popular?api_key=${moviesKey}&page=1`;
+  superagent.get(moviesUrl)
+    .then(moviesResponse => {
+      const moviesData = moviesResponse.body.results;
+      console.log(moviesData);
+      let moviesResult = moviesData.map(item => {
+        return {
+          title : item.title,
+          overview : item.overview,
+          average_votes : item.vote_average,
+          total_votes : item.vote_count,
+          image_url : `https://image.tmdb.org/t/p/w500/${item.poster_path.slice(2)}`,
+          popularity : item.popularity,
+          released_on : item.release_date,
+        }
+      })
+      response.status(200).send(moviesResult);
+    })
+    .catch(error => {
+      errorHandler("Can't find trail data for that location", request, response);
+    })
+
+}
 function errorHandler(error, request, response) {
   console.log(error);
 
@@ -149,8 +175,14 @@ function errorHandler(error, request, response) {
     });
 }
 
+function fourOhFour (req,res){
+  res.status(404).send('Route not found');
+}
+
 app.get('/location', getLocation);
 app.get('/weather', getWeather);
 app.get('/trails', getTrails);
+app.get('/movies', getMovies);
+app.use('*', fourOhFour);
 app.listen(PORT,() => console.log(`Listening on port ${PORT}`));
 
